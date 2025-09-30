@@ -105,7 +105,6 @@ func readOrCreateFile(filename string) (string, error) {
 	if err != nil {
 		// If the error is that the file does not exist, create it
 		if os.IsNotExist(err) {
-			// ایجاد فایل با محتوای خالی
 			f, createErr := os.Create(filename)
 			if createErr != nil {
 				return "", createErr
@@ -150,4 +149,5 @@ func readFile(filename string) (string, error) {
 		}
 	}
 }
+
 
