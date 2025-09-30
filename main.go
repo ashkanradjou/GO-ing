@@ -69,41 +69,41 @@ func main() {
 
 	filename := "doc-simple-functions.txt"
 
-	// مرحله 1: بخوان فایل یا ایجادش در صورت عدم وجود
+	
 	content, err := readOrCreateFile(filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "خطا در خواندن فایل: %v\n", err)
 		return
 	}
 
-	// مرحله 2: اضافه کردن جمله به انتهای فایل
+	// Writing in file
 	appendText := "I write it in this file."
 	if err := appendToFile(filename, appendText); err != nil {
 		fmt.Fprintf(os.Stderr, "خطا در نوشتن به فایل: %v\n", err)
 		return
 	}
 
-	// مرحله 3: دوباره کل متن فایل را پرینت کن
+	// print all
 	updatedContent, err := readFile(filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "خطا در خواندن مجدد فایل: %v\n", err)
 		return
 	}
 
-	// چاپ محتویات
+
 	fmt.Println("محتوای فایل:")
 	fmt.Println(updatedContent)
 
-	// اختیاری: نمایش محتوای ابتدایی (اگر لازم بود)
+
 	_ = content
 
 }
 
 func readOrCreateFile(filename string) (string, error) {
-	// اگر فایل وجود ندارد، آن را ایجاد کرده و محتوای اولیه را با متن خالی مقداردهی می‌کند
+	// If the file does not exist, create it and initialize the content with empty text
 	content, err := readFile(filename)
 	if err != nil {
-		// اگر خطای عدم وجود فایل است، ایجادش کن
+		// If the error is that the file does not exist, create it
 		if os.IsNotExist(err) {
 			// ایجاد فایل با محتوای خالی
 			f, createErr := os.Create(filename)
@@ -111,7 +111,7 @@ func readOrCreateFile(filename string) (string, error) {
 				return "", createErr
 			}
 			defer f.Close()
-			// محتوای اولیه خالی است
+		
 			return "", nil
 		}
 		return "", err
@@ -120,14 +120,12 @@ func readOrCreateFile(filename string) (string, error) {
 }
 
 func appendToFile(filename, text string) error {
-	// باز کردن فایل در حالت append
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	// اضافه کردن newline قبل از متن جدید برای تمیزی فایل
 	_, err = f.WriteString("\n" + text)
 	return err
 }
@@ -139,7 +137,6 @@ func readFile(filename string) (string, error) {
 	}
 	defer f.Close()
 
-	// استفاده از bufio برای خواندن با ظرفیت مناسب
 	var result string
 	reader := bufio.NewReader(f)
 	for {
@@ -147,11 +144,10 @@ func readFile(filename string) (string, error) {
 		result += line
 		if err != nil {
 			if err == io.EOF {
-				// اگر آخر فایل بود، خروجی را برگردان
-				// اگر آخرین خط بدون newline باشد هم به پایان رسیده است
 				return result, nil
 			}
 			return "", err
 		}
 	}
 }
+
