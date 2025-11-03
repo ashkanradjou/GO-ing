@@ -30,7 +30,7 @@ func runDemo(ctx context.Context, st storage.Storage) error {
 		return fmt.Errorf("delete failed: %w", err)
 	}
 
-	// Get بعد از حذف → باید ErrNotFound بدهد
+	// Get after delete → should give ErrNotFound
 	_, err = st.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {

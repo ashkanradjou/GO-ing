@@ -10,12 +10,12 @@ import (
 	"path/filepath"
 )
 
-// نوع concrete unexported
+// concrete unexported
 type fileStore struct {
 	dir string
 }
 
-// سازنده: پوشه را می‌سازد (درصورت نبودن)
+// Creator: Creates the folder (if it doesn't exist)
 func NewFile(dir string) (Storage, error) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return nil, fmt.Errorf("mkdir %s: %w", dir, err)
@@ -23,9 +23,9 @@ func NewFile(dir string) (Storage, error) {
 	return &fileStore{dir: dir}, nil
 }
 
-// کلید را به نام فایل امن تبدیل می‌کنیم (بدون traversal)
+// Convert the key to a secure file name (no traversal)
 func (f *fileStore) keyPath(key string) string {
-	// کلید را به base64url بدون padding تبدیل می‌کنیم
+	//Convert the key to base64url without padding
 	name := base64.RawURLEncoding.EncodeToString([]byte(key))
 	return filepath.Join(f.dir, name+".bin")
 }
@@ -40,12 +40,12 @@ func (f *fileStore) Get(ctx context.Context, key string) ([]byte, error) {
 	p := f.keyPath(key)
 	b, err := os.ReadFile(p)
 	if err != nil {
-		// map کردن not-exist به ErrNotFound (و wrap صحیح)
+		//Map not-exist to ErrNotFound (and wrap correctly)
 		if errorsIsNotExist(err) {
-			// زنجیره شامل ErrNotFound است → errors.Is(err, ErrNotFound) == true
+			//The chain contains ErrNotFound → errors.Is(err, ErrNotFound) == true
 			return nil, fmt.Errorf("file get %q: %w", key, ErrNotFound)
 		}
-		// سایر خطاهای I/O: wrap خود خطای اصلی
+		// Other I/O errors: wrap the main error itself
 		return nil, fmt.Errorf("file get %q: %w", key, err)
 	}
 	return b, nil
@@ -60,7 +60,7 @@ func (f *fileStore) Put(ctx context.Context, key string, val []byte) error {
 
 	p := f.keyPath(key)
 
-	// نوشتن اتمی: به فایل موقت بنویس، بعد rename
+	// Atomic write: write to temporary file, then rename
 	tmp := p + ".tmp"
 	if err := os.WriteFile(tmp, val, 0o600); err != nil {
 		return fmt.Errorf("file put write tmp %q: %w", key, err)
@@ -89,12 +89,9 @@ func (f *fileStore) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-// errorsIsNotExist: کمک‌کننده برای تشخیص not-exist با errors.As روی *fs.PathError
+// errorsIsNotExist: Helper for detecting not-exist with errors.As on *fs.PathError
 func errorsIsNotExist(err error) bool {
-	// راه کوتاه:
-	// return os.IsNotExist(err)
 
-	// برای نمایش errors.As:
 	var pe *fs.PathError
 	if ok := errorsAs(err, &pe); ok {
 		return os.IsNotExist(pe)
@@ -102,7 +99,7 @@ func errorsIsNotExist(err error) bool {
 	return os.IsNotExist(err)
 }
 
-// لایه‌ی نازک قابل جایگزینی برای تست/دمو (تا در import حلقه ایجاد نشود)
+// Replaceable thin layer for testing/demo (to avoid looping in import)
 var (
 	errorsAs = func(err error, target any) bool { return errors.As(err, target) }
 )
